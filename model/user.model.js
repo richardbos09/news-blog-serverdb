@@ -15,8 +15,9 @@ const UserSchema = new Schema({
 const User = mongoose.model('user', UserSchema);
 
 // Add a 'dummy' user (every time you require this file!)
-const user = new User({
-    name: 'Joe',
-}).save();
+// const user = new User({
+//     name: 'Joe',
+//     title: 'user'
+// }).save();
 
 module.exports = User;
