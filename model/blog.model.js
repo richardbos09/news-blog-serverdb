@@ -8,7 +8,7 @@ const BlogSchema = new Schema({
     },
     author: {
         type: Schema.Types.ObjectId,
-        ref: 'Author',
+        ref: 'author',
         required: true
     },
     timestamp: {
@@ -26,13 +26,5 @@ const BlogSchema = new Schema({
 });
 
 const Blog = mongoose.model('blog', BlogSchema);
-
-// const blog = new Blog({
-//     title: 'Blog Post 1',
-//     // author: '1',
-//     timestamp: new Date(1512464400000),
-//     summary: 'Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Aenean lacinia bibendum nulla sed consectetur.',
-//     text: 'Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Sed posuere consectetur est at lobortis. Cras mattis consectetur purus sit amet fermentum.'
-// }).save();
 
 module.exports = Blog;

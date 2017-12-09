@@ -12,9 +12,7 @@ var Archive = require('../model/archive.model');
 routes.get('/archives', function (req, res) {
     res.contentType('application/json');
 
-    Archive.find({
-
-    }).then(function (archives) {
+    Archive.find().then(function (archives) {
         res.status(200).json(archives);
     }).catch((error) => {
         res.status(400).json(error);
@@ -26,7 +24,14 @@ routes.get('/archives', function (req, res) {
 // Vorm van de URL: http://hostname:3000/api/v1/archives/23
 //
 routes.get('/archives/:id', function (req, res) {
+    res.contentType('application/json');
+    const id = req.params.id;
 
+    Archive.findById(id).then((archive) => {
+        res.status(200).json(archive);
+    }).catch((error) => {
+        res.status(401).json(error);
+    });
 });
 
 //
@@ -34,7 +39,20 @@ routes.get('/archives/:id', function (req, res) {
 // Vorm van de URL: POST http://hostname:3000/api/v1/archives
 //
 routes.post('/archives', function (req, res) {
+    // Nieuwe archive wordt alleen toegevoegd bij een blog post of put
+    res.contentType('application/json');
+    const body = req.body;
+    const archive = new Archive({
+        datestamp: body._datestamp
+    });
 
+    archive.push(body._blog);
+
+    archive.save().then((archive) => {
+        res.send(archive);
+    }).catch((error) => {
+        res.status(401).json(error);
+    });
 });
 
 //
@@ -44,8 +62,21 @@ routes.post('/archives', function (req, res) {
 // 
 // Vorm van de URL: PUT http://hostname:3000/api/v1/archives/23
 //
-routes.put('/users/:id', function (req, res) {
-
+routes.put('/archives/:id', function (req, res) {
+    // Bestaande archive wordt alleen verandert bij een blog delete
+    res.contentType('application/json');
+    const id = req.params.id;
+    const body = req.body;
+    
+    Archive.findById(id).then((archive) => {
+        archive.blogs.findByIdAndRemove(body._id).then((blog) => {
+            res.send(blog);
+        }).catch((error) => {
+            res.status(401).json(error);
+        });
+    }).catch((error) => {
+        res.status(401).json(error);
+    });;
 });
 
 //
@@ -56,7 +87,15 @@ routes.put('/users/:id', function (req, res) {
 // Vorm van de URL: DELETE http://hostname:3000/api/v1/archives/23
 //
 routes.delete('/archives/:id', function (req, res) {
+    // Bestaande archive wordt alleen verwijdert wanneer alle blogs deleted zijn
+    res.contentType('application/json');
+    const id = req.params.id;
 
+    Archive.findByIdAndRemove(id).then((archive) => {
+        res.status(200).json(archive);
+    }).catch((error) => {
+        res.status(400).json(error);
+    });
 });
 
 module.exports = routes;

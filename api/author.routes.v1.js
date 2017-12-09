@@ -12,9 +12,7 @@ var Author = require('../model/author.model');
 routes.get('/authors', function (req, res) {
     res.contentType('application/json');
 
-    Author.find({
-
-    }).then(function (authors) {
+    Author.find().then(function (authors) {
         res.status(200).json(authors);
     }).catch((error) => {
         res.status(400).json(error);
@@ -26,7 +24,14 @@ routes.get('/authors', function (req, res) {
 // Vorm van de URL: http://hostname:3000/api/v1/authors/23
 //
 routes.get('/authors/:id', function (req, res) {
+    res.contentType('application/json');
+    const id = req.params.id
 
+    Author.findById(id).then((author) => {
+        res.status(200).json(author);
+    }).catch((error) => {
+        res.status(401).json(error);
+    })
 });
 
 //
@@ -34,7 +39,17 @@ routes.get('/authors/:id', function (req, res) {
 // Vorm van de URL: POST http://hostname:3000/api/v1/authors
 //
 routes.post('/authors', function (req, res) {
+    res.contentType('application/json');
+    const body = req.body;
+    const author = new Blog({
+        name: body._title
+    });
 
+    author.save().then((author) => {
+        res.send(author);
+    }).catch((error) => {
+        res.status(401).json(error);
+    });
 });
 
 //
@@ -45,7 +60,17 @@ routes.post('/authors', function (req, res) {
 // Vorm van de URL: PUT http://hostname:3000/api/v1/authors/23
 //
 routes.put('/users/:id', function (req, res) {
+    res.contentType('application/json');
+    const id = req.params.id;
+    const body = req.body;
 
+    Author.findById(id).then((author) => {
+        author.name = body._name
+    }).save().then((author) => {
+        res.send(author);
+    }).catch((error) => {
+        res.status(401).json(error);
+    });
 });
 
 //
@@ -56,7 +81,14 @@ routes.put('/users/:id', function (req, res) {
 // Vorm van de URL: DELETE http://hostname:3000/api/v1/authors/23
 //
 routes.delete('/authors/:id', function (req, res) {
+    res.contentType('application/json');
+    const id = req.params.id;
 
+    Author.findByIdAndRemove(id).then((author) => {
+        res.status(200).json(author);
+    }).catch((error) => {
+        res.status(400).json(error);
+    })
 });
 
 module.exports = routes;

@@ -6,17 +6,13 @@ const ArchiveSchema = new Schema({
         type: Date,
         required: true
     },
-    blogs: {
-        type: Schema.Types.ObjectId, 
-        ref: 'Blog',
+    blogs: [{
+        type: Schema.Types.ObjectId,
+        ref: 'blog',
         required: true
-    }
+    }]
 });
 
 const Archive = mongoose.model('archive', ArchiveSchema);
-
-// const archive = new Archive({
-//     datestamp: new Date(2017, 11),
-// }).save();
 
 module.exports = Archive;

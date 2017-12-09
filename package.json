@@ -4,7 +4,7 @@
   "description": "Node server met API naar mongodb database",
   "main": "server.js",
   "scripts": {
-    "test": "node node_modules/mocha/bin/_mocha ./test/*test.js --reporter spec",
+    "test": "nodemon node_modules/mocha/bin/_mocha ./test/*test.js --reporter spec",
     "start": "nodemon server.js"
   },
   "repository": {
