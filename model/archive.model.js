@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ArchiveSchema = new Schema({
-    datestamp: {
+    _datestamp: {
         type: Date,
         required: true
     },
-    blogs: [{
+    _blogs: [{
         type: Schema.Types.ObjectId,
         ref: 'blog',
         required: true

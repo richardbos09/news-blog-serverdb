@@ -5,6 +5,7 @@ var express = require('express');
 var routes = express.Router();
 var mongodb = require('../config/mongo.db');
 var Blog = require('../model/blog.model');
+var Author = require('../model/author.model');
 
 //
 // Geef een lijst van alle blogs.
@@ -40,20 +41,22 @@ routes.get('/blogs/:id', function (req, res) {
 //
 routes.post('/blogs', function (req, res) {
     res.contentType('application/json');
-    const body = req.body;
-    const blog = new Blog({
-        title: body._title,
-        author: body._author,
-        timestamp: body._timestamp,
-        summary: body._summary,
-        text: body._text
-    });
+    const data = req.body.data;
+    console.log(data);
 
-    blog.save().then((blog) => {
-        res.send(blog);
-    }).catch((error) => {
-        res.status(401).json(error);
-    });
+    // const blog = new Blog({
+    //     _title: body._title,
+    //     _author: body.author,
+    //     _timestamp: body._timestamp,
+    //     _summary: body._summary,
+    //     _text: body._text
+    // });
+
+    // blog.save().then((blog) => {
+    //     res.send(blog);
+    // }).catch((error) => {
+    //     res.status(401).json(error);
+    // });
 });
 
 //
@@ -69,11 +72,11 @@ routes.put('/users/:id', function (req, res) {
     const body = req.body;
 
     Blog.findById(id).then((blog) => {
-        blog.title = body._title,
-        blog.author = body._author,
-        blog.timestamp = body._timestamp,
-        blog.summary = body._summary,
-        blog.text = body._text
+        blog._title = body._title,
+        blog._author = body._author,
+        blog._timestamp = body._timestamp,
+        blog._summary = body._summary,
+        blog._text = body._text
     }).save().then((blog) => {
         res.send(blog);
     }).catch((error) => {

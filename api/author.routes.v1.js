@@ -42,7 +42,7 @@ routes.post('/authors', function (req, res) {
     res.contentType('application/json');
     const body = req.body;
     const author = new Blog({
-        name: body._title
+        name: body._name
     });
 
     author.save().then((author) => {
@@ -65,7 +65,7 @@ routes.put('/users/:id', function (req, res) {
     const body = req.body;
 
     Author.findById(id).then((author) => {
-        author.name = body._name
+        author._name = body._name
     }).save().then((author) => {
         res.send(author);
     }).catch((error) => {

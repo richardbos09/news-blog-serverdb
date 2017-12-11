@@ -43,10 +43,10 @@ routes.post('/archives', function (req, res) {
     res.contentType('application/json');
     const body = req.body;
     const archive = new Archive({
-        datestamp: body._datestamp
+        _datestamp: body._datestamp
     });
 
-    archive.push(body._blog);
+    archive._blogs.push(body.blog);
 
     archive.save().then((archive) => {
         res.send(archive);
@@ -69,7 +69,7 @@ routes.put('/archives/:id', function (req, res) {
     const body = req.body;
     
     Archive.findById(id).then((archive) => {
-        archive.blogs.findByIdAndRemove(body._id).then((blog) => {
+        archive._blogs.findByIdAndRemove(body._id).then((blog) => {
             res.send(blog);
         }).catch((error) => {
             res.status(401).json(error);

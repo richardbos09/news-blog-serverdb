@@ -2,24 +2,24 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const BlogSchema = new Schema({
-    title: {
+    _title: {
         type: String,
         required: true
     },
-    author: {
+    _author: {
         type: Schema.Types.ObjectId,
         ref: 'author',
         required: true
     },
-    timestamp: {
+    _timestamp: {
         type: Date,
         required: true
     },
-    summary: {
+    _summary: {
         type: String,
         required: true
     },
-    text: {
+    _text: {
         type: String,
         required: true
     }
