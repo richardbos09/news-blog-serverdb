@@ -4,6 +4,7 @@
 var express = require('express');
 var routes = express.Router();
 var mongodb = require('../config/mongo.db');
+var Archive = require('../model/archive.model');
 var Blog = require('../model/blog.model');
 var Author = require('../model/author.model');
 
@@ -42,31 +43,52 @@ routes.get('/blogs/:id', function (req, res) {
 routes.post('/blogs', function (req, res) {
     res.contentType('application/json');
     const data = req.body.data;
-    let blog = new Blog({
+    const year = new Date(data._timestamp).getFullYear();
+    const month = new Date(data._timestamp).getMonth();
+    const datestamp = new Date(year, month);
+    const blog = new Blog({
         _title: data._title,
         _timestamp: data._timestamp,
         _summary: data._summary,
         _text: data._text
     });
-    let author = null;
 
-    Author.findById(data._author._id).then((a) => {
-        if(data._author._id) {
-            author = a;
-            blog._author = author;
+    const author = Author.findById(data._author._id).then((author) => {
+        if(author) {
+            return blog._author = author;
         } else {
-            author = new Author({  _name: data._author._name })
-            blog._author = author;
+            return blog._author = new Author({  
+                _name: data._author._name 
+            });
         }
-    }).then(() => {
-        Promise.all([
-            author.save(),
-            blog.save().then((blog) => {
-                res.send(blog);
-            }).catch((error) => {
-                res.status(401).json(error);
-            })
-        ]);
+    });
+
+    const archive = Archive.findOne({ _datestamp: datestamp}).then((archive) => {
+        if(archive) {
+            archive._blogs.push(blog);
+            return archive;
+        } else {
+            archive = new Archive({
+                _datestamp: datestamp
+            });
+            archive._blogs.push(blog);
+            return archive;
+        }
+    });
+
+    Promise.all([
+        archive.then((archive) => {
+            archive.save();
+        }),
+        author.then((author) => {
+            author.save();
+        })
+    ]).then(() => {
+        blog.save().then((blog) => {
+            res.send(blog);
+        }).catch((error) => {
+            res.status(401).json(error);
+        })
     })
 });
 
