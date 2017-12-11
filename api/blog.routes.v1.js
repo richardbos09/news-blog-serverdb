@@ -42,21 +42,32 @@ routes.get('/blogs/:id', function (req, res) {
 routes.post('/blogs', function (req, res) {
     res.contentType('application/json');
     const data = req.body.data;
-    console.log(data);
+    let blog = new Blog({
+        _title: data._title,
+        _timestamp: data._timestamp,
+        _summary: data._summary,
+        _text: data._text
+    });
+    let author = null;
 
-    // const blog = new Blog({
-    //     _title: body._title,
-    //     _author: body.author,
-    //     _timestamp: body._timestamp,
-    //     _summary: body._summary,
-    //     _text: body._text
-    // });
-
-    // blog.save().then((blog) => {
-    //     res.send(blog);
-    // }).catch((error) => {
-    //     res.status(401).json(error);
-    // });
+    Author.findById(data._author._id).then((a) => {
+        if(data._author._id) {
+            author = a;
+            blog._author = author;
+        } else {
+            author = new Author({  _name: data._author._name })
+            blog._author = author;
+        }
+    }).then(() => {
+        Promise.all([
+            author.save(),
+            blog.save().then((blog) => {
+                res.send(blog);
+            }).catch((error) => {
+                res.status(401).json(error);
+            })
+        ]);
+    })
 });
 
 //
