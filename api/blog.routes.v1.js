@@ -53,7 +53,7 @@ routes.post('/blogs', function (req, res) {
         _text: data._text
     });
 
-    const author = Author.findById(data._author._id).then((author) => {
+    const authorPromise = Author.findById(data._author._id).then((author) => {
         if(author) {
             return blog._author = author;
         } else {
@@ -63,7 +63,7 @@ routes.post('/blogs', function (req, res) {
         }
     });
 
-    const archive = Archive.findOne({ _datestamp: datestamp}).then((archive) => {
+    const archivePromise = Archive.findOne({ _datestamp: datestamp}).then((archive) => {
         if(archive) {
             archive._blogs.push(blog);
             return archive;
@@ -77,10 +77,10 @@ routes.post('/blogs', function (req, res) {
     });
 
     Promise.all([
-        archive.then((archive) => {
+        archivePromise.then((archive) => {
             archive.save();
         }),
-        author.then((author) => {
+        authorPromise.then((author) => {
             author.save();
         })
     ]).then(() => {
@@ -99,21 +99,65 @@ routes.post('/blogs', function (req, res) {
 // 
 // Vorm van de URL: PUT http://hostname:3000/api/v1/blogs/23
 //
-routes.put('/users/:id', function (req, res) {
+routes.put('/blogs/:id', function (req, res) {
     res.contentType('application/json');
-    const id = req.params.id;
-    const body = req.body;
+    const data = req.body.data;
+    const year = new Date(data._timestamp).getFullYear();
+    const month = new Date(data._timestamp).getMonth();
+    const datestamp = new Date(year, month);
+    let blog = null
+    let author = null;
+    let promises = [
+        promise = null,
+        promise = null,
+        promise = null
+    ];
 
-    Blog.findById(id).then((blog) => {
-        blog._title = body._title,
-        blog._author = body._author,
-        blog._timestamp = body._timestamp,
-        blog._summary = body._summary,
-        blog._text = body._text
-    }).save().then((blog) => {
-        res.send(blog);
-    }).catch((error) => {
-        res.status(401).json(error);
+    promises[0] = Author.findById(data._author._id).then((value) => {
+        if(value) {
+            return author = value;
+        } else {
+            return author = new Author({  
+                _name: data._author._name 
+            });
+        }
+    });
+
+    promises[1] = Blog.findById(data._id).then((value) => {
+        value._title = data._title;
+        value._timestamp = data._timestamp;
+        value._summary = data._summary;
+        value._text = data._text;
+        return blog = value;
+    });
+
+    promises[2] = Archive.findOne({ _datestamp: datestamp}).then((value) => {
+        if(value) {
+            return value;
+        } else {
+            return new Archive({
+                _datestamp: datestamp
+            });
+        }
+    });
+
+    promises[0].then((value) => {
+        value.save();
+        console.log(value);
+    }).then(() => {
+        promises[1].then(value => {
+            value._author = author;
+            value.save().then((value) => {
+                res.send(value);
+            }).catch((error) => {
+                res.status(401).json(error);
+            });
+        }).then(() => {
+            promises[2].then((value) => {
+                value._blogs.push(blog);
+                value.save();
+            });
+        });
     });
 });
 
