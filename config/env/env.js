@@ -1,10 +1,16 @@
 var env = {
+    // MongoDB
     webPort: process.env.PORT || 3000,
     dbHost: process.env.DB_HOST || 'localhost',
     dbPort: process.env.DB_PORT || '',
     dbUser: process.env.DB_USER || '',
     dbPassword: process.env.DB_PASSWORD || '',
     dbDatabase: process.env.DB_DATABASE || 'news_blog',
+
+    // Neo4jDB: GraphDB
+    neoDbUri: process.env.NEO_DB_URI || 'bolt://localhost',
+    neoDbUser: process.env.NEO_DB_USER || 'neo4j',
+    neoDbPassword: process.env.NEO_DB_PASSWORD || 'neo4j'
 }
 
 var dburl = process.env.NODE_ENV === 'production' ?
