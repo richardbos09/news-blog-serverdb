@@ -6,6 +6,7 @@ var express = require('express');
 var bodyParser = require('body-parser')
 var logger = require('morgan');
 var mongodb = require('./config/mongo.db');
+var neo4jdb = require('./config/neo4j.db');
 var userroutes_v1 = require('./api/user.routes.v1');
 var archiveroutes_v1 = require('./api/archive.routes.v1');
 var blogroutes_v1 = require('./api/blog.routes.v1');
@@ -96,6 +97,8 @@ app.use('*', function (req, res) {
         'error': 'Deze URL is niet beschikbaar.'
     });
 });
+
+process.on('unhandledRejection', r => console.log(r));
 
 // Installatie klaar; start de server.
 app.listen(config.env.webPort, function () {
