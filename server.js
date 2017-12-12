@@ -5,12 +5,18 @@ var http = require('http');
 var express = require('express');
 var bodyParser = require('body-parser')
 var logger = require('morgan');
+
+// MongoDb
 var mongodb = require('./config/mongo.db');
-var neo4jdb = require('./config/neo4j.db');
 var userroutes_v1 = require('./api/user.routes.v1');
 var archiveroutes_v1 = require('./api/archive.routes.v1');
 var blogroutes_v1 = require('./api/blog.routes.v1');
 var authorroutes_v1 = require('./api/author.routes.v1');
+
+// Neo4j: GraphDB
+var neo4jdb = require('./config/neo4j.db');
+var authorroutes_neo4j_v1 = require('./api/neo4j/author.routes.v1');
+
 // var auth_routes_v1 = require('./api/auth/authentication.routes.v1');
 var config = require('./config/env/env');
 // var expressJWT = require('express-jwt');
@@ -70,12 +76,15 @@ app.use(function (req, res, next) {
     next();
 });
 
-// Installeer de routers
-// app.use('/api/v1', auth_routes_v1);
+// MongoDB: Installeer de routers
 app.use('/api/v1', userroutes_v1);
 app.use('/api/v1', archiveroutes_v1);
 app.use('/api/v1', blogroutes_v1);
 app.use('/api/v1', authorroutes_v1);
+// app.use('/api/v1', auth_routes_v1);
+
+// Neo4j: GraphDB: Installeer de routers
+app.use('/api/neo4j/v1', authorroutes_neo4j_v1);
 
 // Errorhandler voor express-jwt errors
 // Wordt uitgevoerd wanneer err != null; anders door naar next().
@@ -103,10 +112,15 @@ process.on('unhandledRejection', r => console.log(r));
 // Installatie klaar; start de server.
 app.listen(config.env.webPort, function () {
     console.log('De server luistert op port ' + app.get('port'));
+
+    console.log('MongoDB:: GET, POST, PUT, DELETE');
     console.log('Zie bijvoorbeeld http://localhost:3000/api/v1/users');
     console.log('Zie bijvoorbeeld http://localhost:3000/api/v1/archives');
     console.log('Zie bijvoorbeeld http://localhost:3000/api/v1/blogs');
     console.log('Zie bijvoorbeeld http://localhost:3000/api/v1/authors');
+
+    console.log('Neo4j: GraphDB:: GET, POST, PUT, DELETE');
+    console.log('Zie bijvoorbeeld http://localhost:3000/api/neo4j/v1/authors');
 });
 
 // Voor testen met mocha/chai moeten we de app exporteren.

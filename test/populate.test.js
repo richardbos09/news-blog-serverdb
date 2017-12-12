@@ -1,3 +1,4 @@
+const session = require('../config/neo4j.db');
 const mongoose = require('mongoose');
 const assert = require('assert');
 const User = require('../model/user.model');
@@ -21,8 +22,8 @@ let archives = [
     archive = null,
 ];
 
-describe('Populate into database', () => {
-    it('Creating collections', (done) => {
+describe('Populate into MongoDB & Neo4j: GraphDB', () => {
+    it('Creating collections & nodes', (done) => {
         authors[0] = new Author({ _name: 'Richard' });
         authors[1] = new Author({ _name: 'Danny' });
         authors[2] = new Author({ _name: 'Hugo' });
@@ -57,6 +58,7 @@ describe('Populate into database', () => {
             authors[1].save(),
             authors[2].save(),
         ]).then(() => {
+            session.close();
             return done();
         });
     });
