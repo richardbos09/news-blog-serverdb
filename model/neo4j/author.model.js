@@ -1,9 +1,9 @@
 class Author {
 
     constructor(id, name) {
-        this.id = id,
-        this.name = name;
+        this._id = id,
+        this._name = name;
     }
 }
 
-module.export = Author;
+module.exports = Author;

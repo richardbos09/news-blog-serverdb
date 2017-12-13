@@ -1,8 +1,9 @@
-const mongoose = require('mongoose');
-const User = require('../model/user.model');
-const Archive = require('../model/archive.model');
-const Blog = require('../model/blog.model');
-const Author = require('../model/author.model');
+var session = require('../config/neo4j.db');
+var mongoose = require('mongoose');
+var User = require('../model/user.model');
+var Archive = require('../model/archive.model');
+var Blog = require('../model/blog.model');
+var Author = require('../model/author.model');
 
 mongoose.Promise = global.Promise;
 
@@ -10,8 +11,8 @@ before((done) => {
   console.log('Connect to database')
   mongoose.connect('mongodb://localhost/news_blog');
   mongoose.connection.once('open', () => { 
-      console.log('Connected!');
-      done(); 
+      done();
+      console.log('Connected!'); 
   }).on('error', (error) => {
       console.warn('Warning', error);
   });
@@ -24,8 +25,9 @@ before((done) => {
     archives.drop(() => {
       blogs.drop(() => {
         authors.drop(() => {
-          console.log('Dropped!');
           done();
+          session.run('MATCH (n) DETACH DELETE n');
+          console.log('Dropped!');
         });
       });
     });
