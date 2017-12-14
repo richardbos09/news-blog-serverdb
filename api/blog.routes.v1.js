@@ -100,7 +100,7 @@ routes.post('/blogs', function (req, res) {
             res.status(401).json(error);
         })
     }).then(() => {
-        session.close();
+        neo4jdb.close();
     });
 });
 
@@ -178,7 +178,7 @@ routes.put('/blogs/:id', function (req, res) {
             });
         });
     }).then(() => {
-        session.close();
+        neo4jdb.close();
     });
 });
 
