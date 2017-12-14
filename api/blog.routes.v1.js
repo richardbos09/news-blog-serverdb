@@ -4,9 +4,11 @@
 var express = require('express');
 var routes = express.Router();
 var mongodb = require('../config/mongo.db');
+var neo4jdb = require('../config/neo4j.db');
 var Archive = require('../model/archive.model');
 var Blog = require('../model/blog.model');
 var Author = require('../model/author.model');
+
 
 //
 // Geef een lijst van alle blogs.
@@ -52,11 +54,13 @@ routes.post('/blogs', function (req, res) {
         _summary: data._summary,
         _text: data._text
     });
+    let newAuthor = false;
 
     const authorPromise = Author.findById(data._author._id).then((author) => {
         if(author) {
             return blog._author = author;
         } else {
+            newAuthor = true;
             return blog._author = new Author({  
                 _name: data._author._name 
             });
@@ -81,6 +85,12 @@ routes.post('/blogs', function (req, res) {
             archive.save();
         }),
         authorPromise.then((author) => {
+            if(newAuthor) {
+                const id = author._id.toString();
+                const name = author._name;
+                const create = 'CREATE (author:Author { _id: {id}, name: {name} })';
+                neo4jdb.run(create, {id: id, name: name})
+            }
             author.save();
         })
     ]).then(() => {
@@ -89,7 +99,9 @@ routes.post('/blogs', function (req, res) {
         }).catch((error) => {
             res.status(401).json(error);
         })
-    })
+    }).then(() => {
+        session.close();
+    });
 });
 
 //
@@ -112,11 +124,13 @@ routes.put('/blogs/:id', function (req, res) {
         promise = null,
         promise = null
     ];
+    let newAuthor = false;
 
     promises[0] = Author.findById(data._author._id).then((value) => {
         if(value) {
             return author = value;
         } else {
+            newAuthor = true;
             return author = new Author({  
                 _name: data._author._name 
             });
@@ -142,8 +156,13 @@ routes.put('/blogs/:id', function (req, res) {
     });
 
     promises[0].then((value) => {
+        if(newAuthor) {
+            const id = value._id.toString();
+            const name = value._name;
+            const create = 'CREATE (author:Author { _id: {id}, name: {name} })';
+            neo4jdb.run(create, {id: id, name: name})
+        }
         value.save();
-        console.log(value);
     }).then(() => {
         promises[1].then(value => {
             value._author = author;
@@ -158,6 +177,8 @@ routes.put('/blogs/:id', function (req, res) {
                 value.save();
             });
         });
+    }).then(() => {
+        session.close();
     });
 });
 

@@ -9,6 +9,7 @@ var env = {
 
     // Neo4jDB: GraphDB
     neoDbUri: process.env.NEO_DB_URI || 'bolt://localhost',
+    neoDbPort: process.env.NEO_DB_PORT || '7687',
     neoDbUser: process.env.NEO_DB_USER || 'neo4j',
     neoDbPassword: process.env.NEO_DB_PASSWORD || 'neoj'
 }
