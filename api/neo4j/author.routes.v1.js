@@ -34,7 +34,7 @@ routes.get('/authors', function (req, res) {
 //
 // Neo4j; GraphDB
 // Retourneer één specifieke author. Hier maken we gebruik van URL parameters.
-// Vorm van de URL: http://hostname:3000/api/v1/authors/23
+// Vorm van de URL: http://hostname:3000/api/neo4j/v1/authors/23
 //
 routes.get('/authors/:id', function (req, res) {
     res.contentType('application/json');
