@@ -95,6 +95,21 @@ routes.post('/blogs', function (req, res) {
         })
     ]).then(() => {
         blog.save().then((blog) => {
+            const id = blog._id.toString();
+            const title = blog._title;
+            const author = blog._author._id.toString();
+            const timestamp = blog._timestamp.toString();
+            const summary = blog._summary;
+            const text = blog._text;
+            const authorNode = '(author:Author { _id: {author} })';
+            const createdBy = '(author)<-[:CREATED_BY]-';
+            const blogNode = '(blog:Blog { _id: {id}, title: {title}, author: {author}, timestamp: {timestamp} })'
+            const summaryNode = '(s:Summary { summary: {summary} })';
+            const textNode = '(t:Text { text: {text} })';
+            const summaryRel = '-[hs:HAS_SUMMARY]->';
+            const textRel = '-[ht:HAS_TEXT]->'
+            const query = 'MATCH ' + authorNode + ' CREATE ' + createdBy + blogNode + summaryRel + summaryNode + textRel + textNode;
+            neo4jdb.run(query, {id: id, title: title, author: author, timestamp: timestamp, summary: summary, text: text});
             res.send(blog);
         }).catch((error) => {
             res.status(401).json(error);

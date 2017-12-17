@@ -60,19 +60,67 @@ describe('Populating databases in MongoDB & Neo4j: GraphDB', () => {
         });
     });
 
-    it('Neo4j: GraphDB:: Creating nodes', (done) => {
+    it('Neo4j: GraphDB:: Creating nodes and relations', (done) => {
         let all = null;
 
         data = []
-        data[0] = Promise.map(authors, (author) => {
+        data[0] = Promise.map(blogs, (blog) => {
+            const id = blog._id.toString();
+            const title = blog._title;
+            const author = blog._author._id.toString();
+            const timestamp = blog._timestamp.toString();
+            const summary = blog._summary;
+            const text = blog._text;
+            const blogNode = '(blog:Blog { _id: {id}, title: {title}, author: {author}, timestamp: {timestamp} })'
+            const summaryNode = '(s:Summary { summary: {summary} })';
+            const textNode = '(t:Text { text: {text} })';
+            const summaryRel = '-[hs:HAS_SUMMARY]->';
+            const textRel = '-[ht:HAS_TEXT]->'
+            const query = 'CREATE ' + blogNode + summaryRel + summaryNode + textRel + textNode;
+            return session.run(query, {
+                id: id, 
+                title: title, 
+                author: author, 
+                timestamp: timestamp, 
+                summary: summary, 
+                text: text
+            });
+        }); 
+
+        data[1] = Promise.map(authors, (author) => {
             const id = author._id.toString();
             const name = author._name;
-            const create = 'CREATE (author:Author { _id: {id}, name: {name} })';
-            return session.run(create, {id: id, name: name});
+            const query = 'CREATE (author:Author { _id: {id}, name: {name} })';
+            return session.run(query, {id: id, name: name});
         });
 
         all = Promise.all([
-            data[0]
+            data[0],
+            data[1]
+        ]);
+
+        all.then((data) => {
+            done();
+            session.close();
+            //console.log(data);
+        });
+    });
+
+    it('Neo4j: GraphDB:: Creating relations with nodes', (done) => {
+        let all = null;
+
+        data = []
+        data[0] = Promise.map(blogs, (blog) => {
+            const id = blog._id.toString();
+            const author = blog._author._id.toString();
+            const match = 'MATCH (blog:Blog { _id: {id} }), (author:Author { _id: {author} })';
+            const createdBy = 'CREATE (blog)-[:CREATED_BY]->(author)';
+            const query = match + createdBy;
+            return session.run(query, {id: id, author: author});
+        }); 
+
+        all = Promise.all([
+            data[0],
         ]);
 
         all.then((data) => {
