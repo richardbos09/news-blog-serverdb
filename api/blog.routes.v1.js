@@ -101,16 +101,13 @@ routes.post('/blogs', function (req, res) {
             const timestamp = blog._timestamp.toString();
             const summary = blog._summary;
             const text = blog._text;
-            const authorNode = '(author:Author { _id: {author} })';
-            const createdBy = '(author)<-[:CREATED_BY]-';
-            const blogNode = '(blog:Blog { _id: {id}, title: {title}, author: {author}, timestamp: {timestamp} })'
-            const summaryNode = '(s:Summary { summary: {summary} })';
-            const textNode = '(t:Text { text: {text} })';
-            const summaryRel = '-[hs:HAS_SUMMARY]->';
-            const textRel = '-[ht:HAS_TEXT]->'
-            const query = 'MATCH ' + authorNode + ' CREATE ' + createdBy + blogNode + summaryRel + summaryNode + textRel + textNode;
+            const query = `
+                MATCH (author:Author { _id: {author} }) 
+                CREATE (blog:Blog { _id: {id}, title: {title}, author: {author}, timestamp: {timestamp} }), (s:Summary { summary: {summary} }), (t:Text { text: {text} })
+                CREATE UNIQUE (author)-[:CREATED { created_on: {timestamp}}]->(blog)-[:HAS_SUMMARY]->(s)-[ht:HAS_TEXT]->(t)
+            `;
             neo4jdb.run(query, {id: id, title: title, author: author, timestamp: timestamp, summary: summary, text: text});
-            res.send(blog);
+            res.status(200).send(blog);
         }).catch((error) => {
             res.status(401).json(error);
         })
@@ -182,6 +179,19 @@ routes.put('/blogs/:id', function (req, res) {
         promises[1].then(value => {
             value._author = author;
             value.save().then((value) => {
+                const id = value._id.toString();
+                const title = value._title;
+                const author = value._author._id.toString();
+                const timestamp = value._timestamp.toString();
+                const summary = value._summary;
+                const text = value._text;
+                const query = `
+                    MATCH (a:Author), (b:Blog)-[:HAS_SUMMARY]->(s:Summary)-[:HAS_TEXT]->(t:Text)
+                    WHERE a._id = {author} AND b._id = {id}
+                    MERGE (a)-[u:UPDATED]->(b)
+                    SET b.title = {title}, b.author = {author}, b.timestamp = {timestamp}, s.summary = {summary}, t.text = {text}, u.updated_on = {timestamp}
+                `;
+                neo4jdb.run(query, {id: id, title: title, author: author, timestamp: timestamp, summary: summary, text: text});
                 res.send(value);
             }).catch((error) => {
                 res.status(401).json(error);
@@ -206,9 +216,15 @@ routes.put('/blogs/:id', function (req, res) {
 //
 routes.delete('/blogs/:id', function (req, res) {
     res.contentType('application/json');
-    const id = req.params.id;
+    const id = req.params.id.toString();
+    const query = `
+        MATCH (blog:Blog)-[hs:HAS_SUMMARY]->(s:Summary)-[ht:HAS_TEXT]->(t:Text)
+        WHERE blog._id = {id}
+        DETACH DELETE blog, hs, s, ht, t
+    `;
 
     Blog.findByIdAndRemove(id).then((blog) => {
+        neo4jdb.run(query, {id: id});
         res.status(200).json(blog);
     }).catch((error) => {
         res.status(400).json(error);

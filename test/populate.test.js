@@ -7,6 +7,12 @@ var Archive = require('../model/archive.model');
 var Blog = require('../model/blog.model');
 var Author = require('../model/author.model');
 
+//Require the dev-dependencies
+var chai = require('chai');
+var chaiHttp = require('chai-http');
+var server = require('../server');
+var should = chai.should();
+
 describe('Populating databases in MongoDB & Neo4j: GraphDB', () => {
     authors = [];
     authors[0] = new Author({ _name: 'Richard' });
@@ -31,6 +37,33 @@ describe('Populating databases in MongoDB & Neo4j: GraphDB', () => {
     archives[0] = new Archive({ _datestamp: new Date(2017, 11) });
     archives[1] = new Archive({ _datestamp: new Date(2018, 0) });
     archives[2] = new Archive({ _datestamp: new Date(2018, 1) });
+
+    // before((done) => {
+    //     console.log('Connect to databases')
+    //     mongoose.connect('mongodb://localhost/news_blog');
+    //     mongoose.connection.once('open', () => { 
+    //         done();
+    //         //console.log('Connected!'); 
+    //     }).on('error', (error) => {
+    //         //console.warn('Warning', error);
+    //     });
+    // });
+      
+    before((done) => {
+        //console.log('Drop all databases');
+        const { users, archives, blogs, authors } = mongoose.connection.collections;
+        users.drop(() => {
+          archives.drop(() => {
+            blogs.drop(() => {
+              authors.drop(() => {
+                session.run('MATCH (n) DETACH DELETE n');
+                //console.log('Dropped!');
+                done();
+              });
+            });
+          });
+        });
+    });
 
     it('MongoDB:: Creating collections', (done) => {
         archives[0]._blogs.push(blogs[0]);
@@ -113,10 +146,11 @@ describe('Populating databases in MongoDB & Neo4j: GraphDB', () => {
         data[0] = Promise.map(blogs, (blog) => {
             const id = blog._id.toString();
             const author = blog._author._id.toString();
+            const timestamp = blog._timestamp.toString();
             const match = 'MATCH (blog:Blog { _id: {id} }), (author:Author { _id: {author} })';
-            const createdBy = 'CREATE (blog)-[:CREATED_BY]->(author)';
+            const createdBy = 'CREATE UNIQUE (author)-[:CREATED { created_on: {timestamp} }]->(blog)';
             const query = match + createdBy;
-            return session.run(query, {id: id, author: author});
+            return session.run(query, {id: id, author: author, timestamp: timestamp});
         }); 
 
         all = Promise.all([
